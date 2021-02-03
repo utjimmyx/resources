@@ -1,0 +1,65 @@
+---
+title: "Bivariate analysis for marketing managers"
+author: "zhenning Jimmy xu, follow me on Twitter: https://twitter.com/MKTJimmyxu"
+date: "10/24/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Note: this analysis was performed using the open source software R and Rstudio.
+
+## Objective
+
+The objective of this tutorial is to explain how bivariate analysis works.This analysis can be used by marketers to make decisions about their pricing strategies, advertising strategies, and promotion stratgies among others. 
+
+Bivariate analysis is one of the simplest forms of statistical analysis. It is generally used to find out if there is a relationship between two sets of values (or two variables). That said, it usually involves the variables X and Y (statisticshowto.com).
+
++ Univariate analysis is the analysis of one (“uni”) variable.
++ Bivariate analysis is the analysis of exactly two variables.
++ Multivariate analysis is the analysis of more than two variables.
+
+
+## Dataset - We will be using two online datasets available in R for this tutorial
+
+
+
+```{r}
+plot(y3 ~ x2, data = anscombe, pch = 16)
+abline(lm(y3 ~ x3, anscombe), col = "grey20")
+```
+### Question 1:is there a relationship between x and y? If so, how does the relationship look like?
+## Your answer here
+
+```{r}
+library(readr)
+library(readr)
+ad_sales <- read_csv('https://raw.githubusercontent.com/utjimmyx/regression/master/advertising.csv')
+plot(sales ~ TV, data = ad_sales)
+
+```
+
+### Question 2:Is there a relationship between TV advertising and Sales? If so, how does the relationship look like?
+### Your answer here
+
+### Question 3:Can you plot the relationship between radio advertising and Sales? If so, how does the relationship look like?
+
+###Your answer here
+
+###Question 4:Three things you learned from this tutorial
+###Your answer here
+
+
+## References
+
+Bivariate Analysis Definition & Example https://www.statisticshowto.com/bivariate-analysis/#:~:text=Bivariate%20analysis%20means%20the%20analysis,the%20variables%20X%20and%20Y.
+
+https://www.sciencedirect.com/topics/mathematics/bivariate-data
