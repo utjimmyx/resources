@@ -1,0 +1,99 @@
+---
+title: "Avocado Pricing at Retail - 2021"
+author: "zhenning Jimmy xu, follow me on Twitter: https://twitter.com/MKTJimmyxu"
+date: "3/01/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Note: this analysis was performed using the open source software R and Rstudio.
+
+## Objective
+
+The objective of this basic project is to explain the price of avocados using some basic descriptive analysis.This analysis can be used by producers, retailers, and groceries to make decisions about their pricing strategies, advertising strategies, and supply chain stratgies among others. Some additional analysis will follow after this episode. Your feedback is highly appreciated.
+
+## Dataset - weekly avocado sales and price data from the Hass Avocado Board website
+
+This data was downloaded from the Hass Avocado Board website in May of 2018 & compiled into a single CSV. Here's how the Hass Avocado Board describes the data on their website:
+The table below represents weekly retail scan data for National retail volume (units) and price. Retail scan data comes directly from retailers’ cash registers based on actual retail sales of Hass avocados. Starting in 2013, the table below reflects an expanded, multi-outlet retail data set. Multi-outlet reporting includes an aggregation of the following channels: grocery, mass, club, drug, dollar and military. The Average Price (of avocados) in the table reflects a per unit (per avocado) cost, even when multiple units (avocados) are sold in bags. The Product Lookup codes (PLU’s) in the table are only for Hass avocados. Other varieties of avocados (e.g. greenskins) are not included in this table.
+
+```{r echo=TRUE}
+urlfile<-'https://raw.github.com/utjimmyx/resources/master/avocado_HAA.csv'
+data<-read.csv(urlfile, fileEncoding="UTF-8-BOM")
+summary(data)
+library(plyr)
+str(data)
+
+# Let's build a simple histogram
+hist(data$average_price ,
+     main = "Histogram of average_price",
+     xlab = "Price in USD (US Dollar)")
+
+library(ggplot2)
+ggplot(data, aes(x = average_price, fill = type)) + 
+  geom_histogram(bins = 30, col = "red") + 
+  scale_fill_manual(values = c("blue", "green")) +
+  ggtitle("Frequency of Average Price - Oragnic vs. Conventional")
+```
+
+
+## Price elasticity
+To calculate Price Elasticity of Demand we use the formula:
+PE = (?Q/?P) * (P/Q) (Iacobacci, 2015).
+
+(?Q/?P) is determined by the coefficient in our regression analysis below. Here Beta represents the change in the dependent variable y with respect to x (i.e. ?y/?x = (?Q/?P)). To determine (P/Q) we will use the average price and average sales volume (Salem, 2014).
+
+```{r echo=TRUE}
+
+plot(total_volume ~ average_price, data)
+regr <- lm(total_volume ~ average_price, data)
+abline(regr, col='red')
+coefficients(regr)
+Beta <- regr$coefficients[["average_price"]]
+P <- mean(data$average_price)
+Q <- mean(data$total_volume)
+elasticity <-Beta*P/Q
+elasticity
+
+```
+
+
+```{r echo=TRUE}
+# Using Smoothing average forecasting
+timeseries <- ts(data$average_price)
+plot.ts(timeseries)
+
+library("forecast") # load the "forecast" R library
+timeseriesarima <- arima(timeseries, order=c(0,1,1)) # fit an ARIMA(0,1,1) model
+# Use the function ets() to perform a forecasting model
+fit <- ets(timeseries)
+# Plot 20-year forecasts of the lynx series
+fit %>% forecast(h = 200) %>% autoplot()
+#We can plot the observed prices for the current periods, as well as the prices that would be predicted for the next 200 time periods.
+
+```
+## Conclusion - no predictive model is perfect (see the predicted negative values in prices)!!!
+
+We can plot the observed prices for the current periods, as well as the prices that would be predicted for the next 200 time periods.
+
+Please keep in mind that no predictive model is perfect and all models are probably wrong. That said, the predictive prices usually take positive values. However, in our case, we got some negative values. See the interpretation given by Coghlan, 2021 (Parasite Genomics Group, Wellcome Trust Sanger Institute, Cambridge, U.K.) https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/src/timeseries.html 
+
+"One worrying thing is that the model has predicted negative values for the volcanic dust veil index, but this variable can only have positive values! The reason is that the arima() and forecast.Arima() functions don’t know that the variable can only take positive values. Clearly, this is not a very desirable feature of our current predictive model."
+
+References:
+
+Coghlan, 2021 (Parasite Genomics Group, Wellcome Trust Sanger Institute, Cambridge, U.K.). https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/src/timeseries.html 
+
+
+Forecasting using R. https://robjhyndman.com/eindhoven/2-1-StateSpace.pdf
+
+Error, trend, seasonality - ets and its forecast model friends. http://freerangestats.info/blog/2016/11/27/ets-friends.
