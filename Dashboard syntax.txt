@@ -1,0 +1,122 @@
+---
+title: "Let’s Build an Interactive Dashboard"
+author: Zhenning Jimmy xu
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(leaflet)
+library(htmltools)
+library(leaflet.extras)
+library(datasets)
+library(sf)
+library(crosstalk)
+library(dplyr)
+library(reactable)
+library(readr)
+library(highcharter)
+```
+
+Page 1 {style="position:relative;"}
+========================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Voting Shares in Kern County
+
+````{r echo=FALSE}
+
+## We will be using a data set I complied from the following website, Kernvote, for this part of the dashboard
+# Ref: https://kernvote.com/FactsAndFigures/RegisteredVoterCountStatistics
+
+## The final dataset is available on my Github website: 
+# https://github.com/utjimmyx/resources/blob/main/Kern_vote.csv
+# Please download the dataset for this analysis
+
+## We will build a interactive plot to explore the vote shares in Kern county
+# the primary package will be using is named plotly
+# In your R console, you can use ?plotly to see the explanation of this function.
+
+Kern_vote <- read.csv('Kern_vote.csv', fileEncoding="UTF-8-BOM")
+
+p1 <- Kern_vote %>%
+  highlight_key(~Districts) %>%
+  plot_ly(x = ~Districts, y=~Rep_share, text=~Districts,
+          textposition="top", hoverinfo="x+y") %>%
+  add_markers()
+
+p2 <- Kern_vote %>%
+  highlight_key(~Districts) %>%
+  plot_ly(x = ~Districts, y=~Dem_share, text=~Districts,
+          textposition="top", hoverinfo="x+y") %>%
+  add_markers()
+
+subplot(p1, p2) %>% 
+  highlight(on = "plotly_selected", off="plotly_doubleclick", persistent=FALSE) %>% 
+  layout(height=400, width=800,
+         xaxis=list(title="Districts"), 
+         xaxis2 = list(title="Districts"), 
+         yaxis = list(title="Republican Vote Share"),
+         yaxis2 = list(title="Democratic Vote Share"),
+         showlegend = F) 
+
+#we use showlegend = F to avoid Trace0 and Trace1 showing up
+```
+
+Column {data-width=350}
+-------------------------------------------------------------------
+
+### A simple leafmap showcase - CSUB & Hart Memorial Park
+
+````{r echo=FALSE}
+
+## We will print a simple leaflet map that showcases two different locations in Bakersfield
+# In your R console, you can use ?leaflet to see the explanation of this function.
+
+my_map<-leaflet() %>%
+  addTiles() %>%
+  addMarkers(lat=35.3503, lng=-119.1025, popup="CSUB")%>%
+  addMarkers(lat=35.44888889, lng=-118.91083333, popup="Hart Memorial Park")
+
+my_map
+```
+
+### The Geography of Beer
+
+````{r echo=FALSE}
+library(leaflet)
+# We will be using the data set, breweries91, available from R for this part of the dashboard
+#ref: https://rdrr.io/cran/leaflet/man/breweries91.html.
+
+breweries <- SharedData$new(breweries91, group = "breweries")
+
+# A regular data frame (without coordinates) for the table.
+# Use the same group name as the map data.
+brew_data <- as_tibble(breweries91) %>%
+  select(brewery, address, village, founded) %>%
+  SharedData$new(group = "breweries")
+
+map <- leaflet(breweries) %>%
+  addTiles() %>%
+  addMarkers()
+htmltools::tagList(map)
+```
+
+Page 2 {style="position:relative;"}
+========================================================
+### Table - The Geography of Beer {data-width=700}
+````{r echo=FALSE}
+library(DT)
+# We will build a interactive table in this step
+#The main function we will be using is datatable. In your R console, you can use ?datatable to see the explanation of this function.
+datatable(brew_data, options = list(pageLength = 10))
+```
+
+
