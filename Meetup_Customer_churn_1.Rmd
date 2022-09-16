@@ -1,0 +1,155 @@
+---
+title: "Analyzing Customer churn with real world data"
+author: "Your name, taught by zhenning Jimmy xu, follow me on Twitter: https://twitter.com/MKTJimmyxu"
+date: "09/12/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Note: this analysis was performed using the open source software R and Rstudio.
+
+## Introduction
+
+Customer churn occurs when customers or subscribers stop doing business with a company or service, also known as customer attrition. It is also referred as loss of clients or customers. The industry in which churn rates are particularly useful may include the telecommunications industry, the healthcare industry, the insurance industry, etc. because most customers have multiple options from which to choose within a geographic location.
+
+In this lab, we are going to analyze customer churn using telecom dataset available from Kaggle. We will introduce some basic exploratory analysis to help you understand the nature of customer churn. 
+
+##What is customer churn?
+Imagine that you have 10 customers who switch to your competitors (e.g., cancel your service’s subscription) and you originally signed 100 customers during that time period, your churn rate would be:
+```{r}
+churn <- 10
+original <- 100
+Churn_rate <- churn/original
+# How much is the Churn rate? See the result below: 
+Churn_rate
+```
+
+In the industries listed above, the average churn rate is about 20% to 40%. Reducing your churn rate is important because your customers are critical for your business growth (Salesmate, 2021).
+
+## Case study - We will be using a real world dataset available in Kaggle for this tutorial (see the reference)
+
+
+```{r}
+
+churn <- read.csv('WA_Fn-UseC_-Telco-Customer-Churn.csv', na.strings = c('','?'))
+#install.packages("DT")
+#install.packages("DT")
+#install.packages("cowplot")
+#install.packages(c("ggplot2","plyr"),dep=T)
+#error  - The following `from` values were not present in `x`
+#solution - install plyr using the function above
+str(churn)
+library(plyr)
+library(ggplot2)
+library(DT)
+library(cowplot)
+datatable(churn, rownames = FALSE, filter="top", options = list(pageLength = 6, scrollX= T))
+
+#we use the sapply function to remove all missing values
+sapply(churn, function(x) sum(is.na(x)))
+#Exploratory analysis
+head(churn)
+summary(churn)
+
+bi1 <- ggplot(data = churn, aes(x = factor(Churn), y = tenure, fill = Churn)) +geom_boxplot()
+#Explanation - High churn for those with lower tenures
+
+bi2 <- ggplot(data = churn, aes(x = factor(Churn), y = MonthlyCharges, fill = Churn))+geom_boxplot()
+#Explanation - Higher churn for those with higher than avg monthly charges
+
+bi3 <- ggplot(data = churn, aes(x = factor(Churn), y = TotalCharges, fill = Churn))+geom_boxplot()
+#Explanation - Lower churn for those with lower than avg total charges
+
+plot_grid(bi1, bi2, bi3, labels = "AUTO")
+
+#Partner plot
+
+p1 <- ggplot(churn, aes(x = Partner, fill = Partner)) +
+  geom_bar() +
+  geom_text(aes(y = ..count.. -200, 
+                label = paste0(round(prop.table(..count..),4) * 100, '%')), 
+            stat = 'count', 
+            position = position_dodge(.1), 
+            size = 3)
+## using default colors - specify the fill argument within the aes function to be equal to the grouping variable of Partner
+
+#Dependents plot
+p2 <- ggplot(churn, aes(x = Dependents, fill = Dependents)) +
+  geom_bar() +
+  geom_text(aes(y = ..count.. -200, 
+                label = paste0(round(prop.table(..count..),4) * 100, '%')), 
+            stat = 'count', 
+            position = position_dodge(.1), 
+            size = 3)
+
+#install.packages("plyr")
+
+urlfile<-'https://raw.github.com/utjimmyx/resources/master/churn.csv'
+churn<-read.csv(urlfile, fileEncoding="UTF-8-BOM")
+
+
+plot_grid(p1, p2, labels = "AUTO")
+
+
+
+```
+
+```{r}
+###############################################################################
+####### decision trees   ############################################
+###############################################################################
+library(dplyr)
+churn_dt <- churn %>% select(-customerID)
+
+library(rpart)
+model <- rpart(formula = Churn ~., 
+                 
+               churn_dt,method = "class" )
+
+library(rpart.plot)
+rpart.plot(x=model,type=5,extra=0)
+rpart.plot(x=model, extra= 106)
+```
+
+## Appendix - Variable explanations
+
+Please find the variable explanations below:
+
+https://www.kaggle.com/blastchar/telco-customer-churn
+
+The raw data contains 7043 rows (customers) and 21 columns (features).
+customerID
+gender (female, male)
+SeniorCitizen (Whether the customer is a senior citizen or not (1, 0))
+Partner (Whether the customer has a partner or not (Yes, No))
+Dependents (Whether the customer has dependents or not (Yes, No))
+tenure (Number of months the customer has stayed with the company)
+PhoneService (Whether the customer has a phone service or not (Yes, No))
+MultipleLines (Whether the customer has multiple lines r not (Yes, No, No phone service)
+InternetService (Customer’s internet service provider (DSL, Fiber optic, No)
+OnlineSecurity (Whether the customer has online security or not (Yes, No, No internet service)
+OnlineBackup (Whether the customer has online backup or not (Yes, No, No internet service)
+DeviceProtection (Whether the customer has device protection or not (Yes, No, No internet service)
+TechSupport (Whether the customer has tech support or not (Yes, No, No internet service)
+streamingTV (Whether the customer has streaming TV or not (Yes, No, No internet service)
+streamingMovies (Whether the customer has streaming movies or not (Yes, No, No internet service)
+Contract (The contract term of the customer (Month-to-month, One year, Two year)
+PaperlessBilling (Whether the customer has paperless billing or not (Yes, No))
+PaymentMethod (The customer’s payment method (Electronic check, Mailed check, Bank transfer (automatic), Credit card (automatic)))
+MonthlyCharges (The amount charged to the customer monthly — numeric)
+TotalCharges (The total amount charged to the customer — numeric)
+Churn ( Whether the customer churned or not (Yes or No)).
+
+## References
+Data: telco-customer-churn, https://www.kaggle.com/blastchar/telco-customer-churn
+
+Salesmate, 2021. An All-inclusive Guide to SaaS Churn: https://www.salesmate.io/wp-content/uploads/2019/01/Whitepaper-SaaS-Churn.pdf
