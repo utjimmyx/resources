@@ -36,7 +36,7 @@ Bivariate analysis is one of the simplest forms of statistical analysis. It is g
 plot(y3 ~ x2, data = anscombe, pch = 16)
 abline(lm(y3 ~ x3, anscombe), col = "grey20")
 ```
-### Question 1:is there a relationship between x and y? If so, how does the relationship look like?
+### Question 1:is there a relationship between x and y? If so, what does the relationship look like?
 ## Your answer here
 
 ```{r}
@@ -47,10 +47,10 @@ plot(sales ~ TV, data = ad_sales)
 
 ```
 
-### Question 2:Is there a relationship between TV advertising and Sales? If so, how does the relationship look like?
+### Question 2:Is there a relationship between TV advertising and Sales? If so, what does the relationship look like?
 ### Your answer here
 
-### Question 3:Can you plot the relationship between radio advertising and Sales? If so, how does the relationship look like?
+### Question 3:Can you plot the relationship between radio advertising and Sales? If so, what does the relationship look like?
 
 ###Your answer here
 
