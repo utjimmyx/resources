@@ -36,6 +36,7 @@ Bivariate analysis is one of the simplest forms of statistical analysis. It is g
 plot(y3 ~ x2, data = anscombe, pch = 16)
 abline(lm(y3 ~ x3, anscombe), col = "grey20")
 ```
+
 ### Question 1:is there a relationship between x and y? If so, what does the relationship look like?
 ## Your answer here
 
