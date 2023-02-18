@@ -1,0 +1,159 @@
+---
+title: "Scraping Yahoo Finance Data & Conducting Time Series Analysis with R (R Studio) - for the Meetup event in Feb 2023"
+author: "Your name, taught by Dr. zhenning Jimmy xu, Twitter: https://twitter.com/MKTJimmyxu"
+date: "02/16/2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## R Markdown
+
+Description: This meetup is for anyone interested in learning and sharing knowledge about scraping data from Yahoo Finance using R. Yahoo Finance provides a wealth of financial data that can be used for research, analysis, and investment purposes. In this meetup, we will discuss the basics of web scraping, explore the structure of Yahoo Finance pages, and walk through the process of scraping data from Yahoo Finance and analyse the data using R and its libraries such as ggplot2, quantmod, and forecast.
+
+### Agenda:
+
+#### Introduction to web scraping and its applications
+#### Overview of R libraries such as ggplot2, quantmod, and forecast
+#### Live coding session on scraping data from Yahoo Finance using R and its libraries
+#### Tips and tricks for efficient web scraping and handling common issues
+#### Perform very basic time series analysis
+#### Discussion and Q&A session
+
+
+## Who should attend?
+
+Anyone who is interested in learning about web scraping and its application to financial data, from beginners to experienced data analysts and investors. This meetup is open to all skill levels.
+
+Requirements: Participants should bring their laptops to the online event. Basic knowledge of R programming is recommended, but not required. Internet access will be required to access Yahoo Finance pages during the live coding session.
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intro to Quantmod
+
+Quantmod is an R package that provides a suite of tools for quantitative financial modeling and analysis. It enables users to access and manipulate financial data from various sources, including Yahoo Finance. In this tutorial, we will walk through the steps of using quantmod to retrieve and analyze Yahoo Finance data.
+
+To start using quantmod and other free libraries, we need to load the package into R by running the following command:
+
+```{r echo=FALSE}
+library(dplyr)
+library(quantmod)
+library(forecast)
+library(lubridate)
+library(ggplot2)
+```
+
+## Retrieving Yahoo Finance Data
+The first step in using quantmod to retrieve Yahoo Finance data is to specify the ticker symbol for the stock you want to analyze. For example, if you want to retrieve data for Tyson Foods and the Froster Farms, the ticker symbol are TSN and FSTR, seprarately.
+
+Once you have the ticker symbol, you can use the getSymbols() function to retrieve the data. This function downloads data from various sources, including Yahoo Finance, and returns it as an object that can be manipulated in R.
+
+To retrieve data for TSN and FSTR, run the following command:
+
+```{r echo=TRUE}
+getSymbols('TSN', src = 'yahoo', 
+           from = "2010-01-01", to = Sys.Date())
+Stock1 <- data.frame(
+  TSN,
+  date = as.Date(rownames(data.frame(TSN)))
+)
+
+getSymbols('FSTR', src = 'yahoo', 
+           from = "2010-01-01", to = Sys.Date())
+Stock2 <- data.frame(
+  FSTR,
+  date = as.Date(rownames(data.frame(FSTR)))
+)
+head(Stock2)
+```
+
+
+
+This will download the daily historical data for these two stocks.
+
+Note that we specified the start date using the from argument and the end date using the to argument. We set the end date to Sys.Date(), which retrieves data up to the current date.
+
+### Exploring the Data
+Once you have retrieved the data, you can use various functions to explore and manipulate it. Here are a few examples:
+
+### Summary Statistics
+To get a summary of the data, run the summary() function.
+### Summary Statistics
+To get the first six rows of the data, run the head() function.
+
+Now let's dive deeper!
+
+```{r echo=FALSE}
+# Take the adjusted price only
+Stock1 <- Ad(Stock1)
+Stock2 <- Ad(Stock2)
+head(cbind(Stock1, Stock2))
+
+#Let's define Stock1_Stock2 as the ratio expressing the value of the share price of the Stock1 in terms of the share price of Stock2.
+
+Stock1_Stock2 <- Stock1/Stock2
+head(Stock1_Stock2)
+
+# Make a time series plot
+plot.zoo(Stock1_Stock2)
+
+# Add as a reference, a horizontal line at 1
+abline(h=1)
+```
+
+#Now let's run an event analysis and a time series analysis (under development)
+
+```{r echo=FALSE}
+getSymbols('TSN', src = 'yahoo', 
+           from = "2010-01-01", to = Sys.Date())
+Stock1 <- data.frame(
+  TSN,
+  date = as.Date(rownames(data.frame(TSN)))
+)
+
+## Let's get the sp500 data
+getSymbols('SPY', src = 'yahoo', 
+           from = "2010-01-01", to = Sys.Date())
+SP500 <- data.frame(
+  SPY,
+  date = as.Date(rownames(data.frame(SPY)))
+)
+
+head(SP500)
+
+time_series <- inner_join(
+  Stock1, SP500,
+  by = 'date'
+)
+
+head(time_series)
+
+# Estimate a model predicting stock price with market return
+m <- lm(TSN.Adjusted ~ SPY.Adjusted, time_series)
+summary(m)
+
+# Graph the results
+ggplot(time_series, aes(x = date, y = TSN.Adjusted)) + 
+  geom_line() + 
+  geom_hline(aes(yintercept = 0))
+
+event <- ymd("2022-12-01")
+# Graph the results
+ggplot(time_series, aes(x = date, y = TSN.Adjusted)) + 
+  geom_line() + 
+  geom_vline(aes(xintercept = event), linetype = 'dashed') + 
+  geom_hline(aes(yintercept = 0))
+
+# Graph the results
+ggplot(time_series, aes(x = date, y = TSN.Adjusted)) + 
+  geom_line() + 
+  geom_vline(aes(xintercept=ymd("2020-01-30"),linetype="dotted",col="blue")) +
+  geom_vline(aes(xintercept=ymd("2022-12-01"),linetype="solid",col="pink")
+)
+```
+
+References: Intro to the quantmod package. https://www.quantmod.com/
+Using R for Time Series Analysis https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/src/timeseries.html
