@@ -1,0 +1,108 @@
+---
+title: "Scraping Yahoo Finance Data & Google Trends Data and Conducting Time Series Analysis with R (R Studio) "
+author: "Your name, taught by Dr. zhenning Jimmy xu, Twitter: https://twitter.com/MKTJimmyxu"
+date: "02/16/2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## R Markdown
+
+In today’s fast-paced and data-driven world, it’s crucial for businesses and individuals to make informed decisions based on reliable and up-to-date information. One way to obtain such information is by web scraping financial data from sources like Yahoo Finance and Google Trends, and conducting time series analysis to reveal insights and patterns that could be useful for decision-making.
+
+In this tutorial, we will explore the process of scraping financial data from Yahoo Finance and Google Trends using R and R Studio. We will begin by discussing the importance of web scraping in financial analysis and how it can be used to extract relevant data from the web. We will then move on to the specifics of scraping Yahoo Finance and Google Trends data and discuss the steps involved in conducting time series analysis.
+
+We will walk through a step-by-step approach, starting with the installation of the necessary R packages and libraries required for web scraping and time series analysis. Next, we will demonstrate how to extract data from Yahoo Finance and Google Trends using R and R Studio, and how to clean, format and process the extracted data to ensure it is suitable for time series analysis.
+
+Finally, we will conduct time series analysis on the extracted financial data using various techniques such as forecasting and trend analysis, and show how the results can be visualized using R’s powerful graphics capabilities. By the end of this tutorial, you will have gained the skills and knowledge necessary to conduct web scraping and time series analysis on financial data using R and R Studio, enabling you to make informed and data-driven decisions.
+
+```{r echo=FALSE}
+library(dplyr)
+library(quantmod)
+library(forecast)
+library(lubridate)
+library(gtrendsR)
+library(ggplot2)
+#setwd("C:/Users/zxu3/Documents/R")
+#setwd("C:/Users/zxu3/Documents/R/stock/trends") 
+getSymbols('AMZN', src = 'yahoo', 
+           from = Sys.Date() - years(5), to = Sys.Date())
+
+
+AMZN <- data.frame(
+  AMZN,
+  date = as.Date(rownames(data.frame(AMZN)))
+)
+
+#now let's predict Amazon stock price with Google Trends search queries  
+library(gtrendsR)
+trends.dat <- gtrends('ecommerce', 'US')$interest_over_time
+
+#When you make predictions with "recipe," please add # to the beginning of the syntax you would leave out.
+
+library(gtrendsR)
+trends.dat <- gtrends('ecommerce', 'US')$interest_over_time
+
+stock.rounded <- AMZN%>%
+  left_join(
+    aggregate(AMZN["date"], list(month = substr(AMZN$date, 1, 7)), max)%>%
+      mutate(keep = 1)
+  )%>%
+  filter(keep == 1)%>%
+  mutate(month = as.Date(paste0(month,'-01')))
+
+gt.rounded <- trends.dat%>%
+  mutate(month = substr(as.character(date),1,7))%>%
+  group_by(month)%>%
+  summarise(hits = mean(hits))%>%
+  mutate(month = as.Date(paste0(month,'-01')))
+
+stock <- inner_join(
+  stock.rounded, gt.rounded,
+  by = 'month'
+)%>%
+  select(stock.close = AMZN.Adjusted, month, hits)%>%
+  ts(frequency = 12)
+
+
+write.csv(stock, file = "stock.csv")
+str(stock)
+#The first model is a simple linear model
+step <- lm(stock.close ~ hits, stock)
+summary(step)
+
+stock  <- as.data.frame(stock)
+## using the code created by ChatGPT
+library(ggplot2)
+
+ggplot(data = stock, aes(x = hits, y = stock.close)) + 
+  geom_point(size = 3, color = "blue") +
+  labs(title = "Scatter plot of hits vs. stock.close", x = "hits", y = "stock.close")
+
+## add a trend line - ref:https://www.statology.org/ggplot-trendline/
+ggplot(data = stock, aes(x = hits, y = stock.close)) + 
+  geom_point(size = 3, color = "blue") +
+  labs(title = "Scatter plot of hits vs. stock.close", x = "hits", y = "stock.close")+
+geom_point() +
+  geom_smooth(method=lm) #add linear trend line and coefficients
+
+#add linear trend line and coefficients
+
+# assembling a single label with equation and R2
+library(ggpmisc)
+ggplot(data = stock, aes(x = hits, y = stock.close)) +
+  stat_poly_line() +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label),
+                                 after_stat(rr.label), sep = "*\", \"*"))) +
+  geom_point()
+
+```
+
+## Reference:
+
+quantmod: Quantitative Financial Modelling Framework - https://cran.r-project.org/web/packages/quantmod/quantmod.pdf
+
+Intro to the package, GtrendsR - https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf
+
+https://www.rdocumentation.org/packages/gtrendsR/versions/1.5.1
