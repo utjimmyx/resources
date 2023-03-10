@@ -1,0 +1,7 @@
+
+install.packages("RedditExtractoR)
+library(RedditExtractoR)
+library(rtweet)
+urls <- find_thread_urls(subreddit="teslainvestorsclub", sort_by="top")
+str(urls)
+save_as_csv(urls, "urls.csv")
