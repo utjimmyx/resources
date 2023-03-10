@@ -1,0 +1,149 @@
+---
+title: "Text Mining of Reddit Data using R (or R Studio)"
+author: "Your name, taught by Dr. zhenning Jimmy xu, Twitter: https://twitter.com/MKTJimmyxu"
+date: "02/16/2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## R Markdown
+
+Description: This meetup is for anyone interested in learning and sharing knowledge about analyzing Reddit data using R. In this tutorial, we will be using RedditExtractoR and a few other R packages to analyze a dataset of Reddit posts. 
+
+Text mining is the process of analyzing large collections of unstructured text data to discover patterns, trends, and insights. With the rise of social media platforms like Reddit, there is a wealth of information available in the form of user-generated content that can be analyzed using text mining techniques.
+
+R is a popular programming language and environment for statistical computing and graphics, widely used in data analysis and data visualization. In recent years, it has also become a powerful tool for text mining and natural language processing.
+
+In this Meetup event, we will explore how to use R for text mining of Reddit data. We will walk through the process of collecting data from Reddit using its API, cleaning and preprocessing the data, and applying text mining techniques such as sentiment analysis and topic modeling. By the end of the session, you will have a basic understanding of how to use R for text mining of social media data and be able to apply these techniques to other similar datasets.
+
+## Who should attend?
+
+This meetup is open to all skill levels.
+
+Requirements: Participants should bring their laptops to the online event. Basic knowledge of R programming is recommended, but not required. Internet access will be required to access Yahoo Finance pages during the live coding session.
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Processing data
+
+Using a few R packages, we will clean and preprocess the data to prepare it for analysis. We will remove stop words, punctuations, and URLs from the text data.
+
+This will create a corpus of the post titles and remove punctuations, URLs, and stop words. We also perform stemming to reduce words to their root form.
+
+## Creating a Document Term Matrix
+We will now create a document term matrix to represent the text data.
+
+## Text Analysis using tm and other packages
+We can now perform text analysis using tm and other packages. We will start by creating a few plots (word cloud, etc.) to visualize the most frequent words in the post titles.
+
+```{r echo=FALSE, error=TRUE}
+install.packages("tm")
+install.packages("SnowballC")
+install.packages("wordcloud")
+install.packages("RColorBrewer")
+install.packages("syuzhet")
+install.packages("ggplot2")
+install.packages("plotly")
+
+library(readr)
+library(RedditExtractoR)
+library("tm")
+library(rtweet)
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+library("syuzhet")
+library("ggplot2")
+library("plotly")
+reddit <- read_csv("urls.csv")
+str(reddit)
+nrow(reddit)
+ncol(reddit)
+# Isolate text from the file: reddit_text
+reddit_text <- reddit$title
+str(reddit_text)
+head(reddit_text)
+tail(reddit_text)
+
+library(tm)
+reddit_source <- VectorSource(reddit_text)
+# Make a corpus
+reddit_corpus <- VCorpus(reddit_source)
+# Print out the corpus
+reddit_corpus
+reddit_corpus[[16]][1]
+
+TextDoc <- VectorSource(reddit_text)
+TextDoc <- VCorpus(TextDoc)
+
+
+#TextDoc$textCol<- iconv(TextDoc$textCol, "ASCII", "UTF-8", sub="byte")
+#TextDoc <- str_remove_all(string = TextDoc$text, pattern = '[:emoji:]')
+
+
+#This is a trial-and-error process - see the
+#Replacing "/", "@" and "|" with space
+toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+TextDoc <- tm_map(TextDoc, toSpace, "/")
+TextDoc <- tm_map(TextDoc, toSpace, "@")
+TextDoc <- tm_map(TextDoc, toSpace, "\\|")
+# Convert the text to lower case
+#TextDoc <- tm_map(TextDoc, tolower, mc.cores=1)
+TextDoc <- tm_map(TextDoc, tolower, mc.cores=1)
+# Remove numbers
+TextDoc <- tm_map(TextDoc, removeNumbers)
+# Remove english common stopwords
+TextDoc <- tm_map(TextDoc, removeWords, stopwords("english"))
+# Remove your own stop word
+# You may also specify your custom stopwords as a character vector
+
+# Remove punctuations
+TextDoc <- tm_map(TextDoc, removePunctuation)
+# Eliminate extra white spaces
+TextDoc <- tm_map(TextDoc, stripWhitespace)
+# Text stemming - which reduces words to their root form
+#the following step is not required since it converts 'Maine' to 'main."
+#TextDoc <- tm_map(TextDoc, stemDocument)
+
+#TextDoc <- tm_map(TextDoc, PlainTextDocument)
+
+#remove TextDoc <- tm_map(TextDoc, PlainTextDocument)
+#https://stackoverflow.com/questions/32523544/how-to-remove-error-in-term-document-matrix-in-r/36161902
+
+# Build a term-document matrix
+TextDoc_dtm <- TermDocumentMatrix(TextDoc)
+dtm_m <- as.matrix(TextDoc_dtm)
+# Sort by descearing value of frequency
+dtm_v <- sort(rowSums(dtm_m),decreasing=TRUE)
+dtm_d <- data.frame(word = names(dtm_v),freq=dtm_v)
+# Display the top 5 most frequent words
+head(dtm_d, 30)
+
+## mini-step 2 Plot the most frequent words
+barplot(dtm_d[1:20,]$freq, las = 2, names.arg = dtm_d[1:20,]$word,
+        col ="lightgreen", main ="Top 10 or top 20 most frequent words",
+        ylab = "Word frequencies")
+
+## mini-step 3 generate word cloud
+set.seed(1234)
+wordcloud(words = names(dtm_v), freq = dtm_v, min.freq = 3,
+          random.order = F)
+## mini-step 3 generate word cloud
+wordcloud(words = names(dtm_v), freq = dtm_v, min.freq = 3,
+          max.words=500, random.order=FALSE, rot.per=0.40, 
+          colors=brewer.pal(8, "Dark2"))
+
+
+
+## The folllowing step is optiona since it takes so much time - mini-step 3 perform a basic sentiment analysis
+# mySentiment <- get_nrc_sentiment(dtm_d$word)
+```
+
+## References
+'RedditExtractoR' - An R Package that helps you access the Reddit API: https://github.com/ivan-rivera/RedditExtractor
+
+What Are APIs? - Simply Explained: https://www.youtube.com/watch?v=OVvTv9Hy91Q
