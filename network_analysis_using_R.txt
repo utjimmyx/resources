@@ -39,7 +39,7 @@ plot(g_el)
 
 
 ```{r}
-g5 <- graph_from_literal(Jimmy-Mother-Farther-Wife, Jimmy-B:S, Jimmy-A, A-B, Jimmy-G-E, Jimmy-E )
+g5 <- graph_from_literal(Jimmy-Mother-Farther-Wife, Jimmy-Farther, Jimmy-Wife, Jimmy-A, A-B, Jimmy-G-E, Jimmy-E )
 
 plot(g5)
 ```
