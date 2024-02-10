@@ -1,0 +1,45 @@
+---
+title: "My first network graph of my family, career, and friend network"
+output: html_document
+author: xyz taught by Prof. Jimmy Zhenning Xu
+date: "2024-02-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Social network analysis using R
+Social network analysis is a method or tool by which one can analyze the connections across individuals or groups or institutions.
+
+It allows us to examine how actors (e.g.consumers) or institutions (e.g.companies) are interrelated.
+
+The advantage of social network analysis is that, unlike many other methods, it focuses on interaction (rather than on individual behavior).
+
+A network analysis might assess the network for changes in structure deriving from technological disruptions.
+
+This tutorial starts with a simple example and draws from another tutorial by Katherine Ognyanova that has a more in depth look at some of the features of igraph (2016) of any embedded R code chunks within the document.
+
+```{r}
+rm(list=ls())# clear memory
+
+#install.packages ("igraph")
+#library(igraph)# load package igraph
+##I. Edge lists: graph() and get.edgelist(): graph() id starts from 1.
+library(igraph)
+
+```
+
+
+```{r}
+g_el <- graph( c(1,2, 1,3, 2,3, 3,4 ), directed=FALSE)
+summary(g_el)
+plot(g_el)
+```
+
+
+```{r}
+g5 <- graph_from_literal(Jimmy-Mother-Farther-Wife, Jimmy-B:S, Jimmy-A, A-B, Jimmy-G-E, Jimmy-E )
+
+plot(g5)
+```
