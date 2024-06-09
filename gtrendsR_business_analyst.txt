@@ -1,0 +1,41 @@
+
+
+## we will install the packages first
+install.packages(c("curl", "gtrendsR", "dplyr", "leaflet", "leafem", "leaflet.extras", "tigris", "mapview"))
+
+## load the packages
+library(curl)
+library(gtrendsR)
+library(dplyr)
+library(leaflet)
+library(leafem)
+library(leaflet.extras)
+library(mapview)
+library(tigris)
+
+## make a plot
+
+plot(gtrends(keyword = "business analyst", 
+             geo = "US", time = "2024-01-01 2024-06-01", gprop = "web", 
+             low_search_volume = FALSE, onlyInterest = FALSE))
+
+businessanalyst <- gtrends(keyword = "business analyst", 
+                       geo = "US", time = "2024-01-01 2024-06-01", gprop = "web", 
+                       low_search_volume = FALSE, onlyInterest = FALSE)
+
+#Select the data from the Google trends data and display the results in different regions.
+
+region_trend <- businessanalyst$interest_by_region
+
+# Rename the location variable to "NAME"
+names(region_trend)[names(region_trend) == "location"] <- "NAME"
+
+##using the tigris pacakge to get a spatial data for the United States
+
+us_geo <- tigris::states(cb = TRUE, resolution = '20m')
+head(us_geo)
+combineddata <- inner_join(us_geo, region_trend, by = c("NAME" = "NAME")) 
+mapview(combineddata, zcol = "hits")
+
+mapview(combineddata, zcol = "hits", label = "hits", layer.name = "Business Analyst - hits") |> 
+  addStaticLabels(label = combineddata$hits, textsize = "5px")
