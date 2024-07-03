@@ -1,0 +1,34 @@
+library(quantmod)
+library(gtrendsR)
+library(ggplot2)
+#setwd("C:/Users/zxu3/Documents/R")
+#setwd("C:/Users/zxu3/Documents/R/stock/trends") 
+getSymbols('AMZN', src = 'yahoo', 
+           from = Sys.Date() - years(5), to = Sys.Date())
+
+
+AMZN <- data.frame(
+  AMZN,
+  date = as.Date(rownames(data.frame(AMZN)))
+)
+
+# View the data
+head(AMZN)
+plot(AMZN)
+
+
+ggplot(AMZN, aes(date)) + 
+  geom_line(aes(y = AMZN.Adjusted))
+
+
+#now let's predict Amazon stock price with Google Trends search queries  
+library(gtrendsR)
+trends.dat <- gtrends('ecommerce', 'US')$interest_over_time
+
+# View the data
+head(trends.dat)
+plot(trends.dat)
+
+
+ggplot(trends.dat, aes(date)) + 
+  geom_line(aes(y = hits))
