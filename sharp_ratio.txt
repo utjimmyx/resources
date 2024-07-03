@@ -1,0 +1,65 @@
+library(quantmod)
+
+# Define the ticker symbol and start year
+ticker <- "AAPL"
+start_year <- "2020"
+
+# Download the data from Yahoo finance
+symbol <- getSymbols(ticker, src = 'yahoo', auto.assign = FALSE, warnings = FALSE)
+
+# Transform it to monthly returns using the periodReturn function from quantmod
+data <- periodReturn(symbol, period = 'yearly', subset = paste(start_year, "::", sep = ""),
+                     type = 'log')
+
+# Rename the column of returns to something intuitive
+colnames(data) <- ticker
+
+# View the data
+print(data)
+plot(data)
+
+
+# Define the ticker symbol and start year
+ticker2 <- "NVDA"
+start_year <- "2020"
+
+# Download the data from Yahoo finance
+symbol <- getSymbols(ticker2, src = 'yahoo', auto.assign = FALSE, warnings = FALSE)
+
+# Transform it to monthly returns using the periodReturn function from quantmod
+data2 <- periodReturn(symbol, period = 'yearly', subset = paste(start_year, "::", sep = ""),
+                      type = 'log')
+
+# Rename the column of returns to something intuitive
+colnames(data2) <- ticker2
+
+# Assign the data to the global environment with the stock ticker name (optional)
+assign(ticker, data, .GlobalEnv)
+
+# View the data
+print(data2)
+plot(data2)
+
+
+# merge two data frames by ID
+mydf <- merge(data,data2)
+head(mydf)
+plot(mydf)
+
+setNames(cbind(rownames(mydf), mydf, row.names = NULL), 
+         c("date", "AAPL", "NVDA"))
+
+library(ggplot2)
+df <- fortify(mydf)
+head(df)
+
+ggplot(df, aes(Index)) + 
+  geom_line(aes(y = AAPL, colour = "AAPL")) + 
+  geom_line(aes(y = NVDA, colour = "NVDA"))
+
+p <-ggplot(df, aes(Index)) + 
+  geom_line(aes(y = AAPL, colour = "AAPL")) + 
+  geom_line(aes(y = NVDA, colour = "NVDA"))
+
+library(plotly)
+ggplotly(p)
