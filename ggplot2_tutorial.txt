@@ -1,0 +1,151 @@
+---
+title: "Introduction to Data Visualization with ggplot2 - Sep 2024"
+output: html_document
+author: "your name, taught by Dr. Zhenning 'Jimmy' Xu, follow him on Twitter: https://twitter.com/MKTJimmyxu or find him on his website at  utjimmyx.github.io"
+date: "2024-09-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+In this tutorial, we will cover the basics of data visualization using the ggplot2 package in R. We will create simple and informative visualizations, focusing on scatter plots, bar plots, and histograms.
+
+## What is ggplot2?
+ggplot2 is an R package that implements the Grammar of Graphics. It allows users to create complex multi-layered plots in a relatively easy and systematic way.
+
+## Loading Data
+
+First, let’s load a sample dataset. We will use the built-in dataset named "cars."
+
+
+```{r}
+# Load the dataset
+library(ggplot2)
+library(dplyr)
+data(cars)
+head(cars)
+str(cars)
+```
+
+## Building a generic Scatter Plot using the cars dataset available within R 
+
+You can refer to the free dataset availabel within R on this page: https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/00Index.html. For more free datasets, please visit here: https://guides.library.jhu.edu/c.php?g=903617&p=9049714。 
+
+We’ll start by creating a basic scatter plot using ggplot2. A scatter plot is useful for visualizing the relationship between two continuous variables. Let's start building a graph step by step. 
+
+```{r}
+g <- ggplot(cars, aes(x = speed, y = dist))
+```
+
+
+```{r}
+g + geom_point()
+```
+
+```{r}
+g + geom_line()
+```
+
+```{r}
+g + geom_line() + geom_point()
+```
+
+
+```{r}
+ggplot(cars, aes(x = speed, y = dist)) +
+  geom_point() +
+  labs(title = "Scatter Plot of speed vs dist",
+       x = "speed",
+       y = "distance")
+```
+
+## Building a generic Bar Plot using the mtcars data available within R
+
+Next, we’ll create a bar plot to visualize the number of cars by the number of cylinders (cyl).
+
+```{r}
+# Bar plot: Count of cars by cylinders
+ggplot(mtcars, aes(x = factor(cyl))) +
+  geom_bar(fill = "skyblue") +
+  labs(title = "Count of Cars by Number of Cylinders",
+       x = "Number of Cylinders",
+       y = "Count") +
+  theme_minimal()
+```
+
+
+## Creating a customized graph that features the unemplyment rate in July 2024 
+
+Note that many times, we need to create a customized graph. In the following example, you will learn how to create a graph that shows the employment rate for July 2024. 
+
+Today is September 6, 2024. To prepare for this workshop, I first scraped data from the bls website (data source: https://www.bls.gov/web/laus/laumstrk.htm) and then saved it as a csv file (unemployment.csv). You can download the dataset on my github website: https://github.com/utjimmyx/resources/blob/main/unemployment.csv. 
+
+### Let's prepare the dataset
+
+```{r}
+# read the data
+data <- read.csv ("unemployment.csv", stringsAsFactors=FALSE)
+
+# see the names of the columns
+names(data)
+
+data$region  = tolower(data$state)
+
+# get us state map data and merge with the unemployment dataset
+us_state_map = map_data('state')
+map_data = merge(data, us_state_map, by = 'region')
+
+# keep data sorted by polygon order
+map_data = arrange(map_data, order)
+
+```
+
+
+### Let's create a map that shows the unemployment rate for July 2024
+
+Note that we will use the cut_number function to create intervals for the rate variable, each containing an equal number of points (e.g., 2-2.8, 2.8-3.4, etc.).
+
+```{r}
+
+p0 = ggplot(map_data, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = cut_number(rate, 5))) +
+  geom_path(colour = 'green', linestyle = 2) +
+  scale_fill_brewer('Unemployment Rate in July 2024') +
+  coord_map();
+
+p0
+```
+
+### We now add a label to each state of the map
+
+This step is a bonus for those of you who wanted to make your graph more visually appealing. 
+
+```{r}
+states = data.frame(state.center, state.abb)
+
+p1 = ggplot(map_data, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = cut_number(rate, 5))) +
+  geom_path(colour = 'green') +
+  scale_fill_brewer('Unemployment Rate in July 2024') +
+  coord_map() 
+
+p1 + geom_text(data = states, aes(x = x, y = y, label = state.abb, group = NULL), size = 2)
+```
+
+This may not be the end yet in case you wanted to take your project to the next level. See the next plot that showcases the unemployment rate and the state governor's party affiliations. 
+
+https://rpubs.com/utjimmyx/unemployment
+
+## Conclusion
+
+In this tutorial, we’ve covered the basics of ggplot2 and created several different types of plots using generic functions and **customized functions**. You can experiment with additional plot types and customization options to create informative visualizations for your data.
+
+Which graph did you like the best? 
+
+## Reference:
+
+- https://ggplot2-book.org/ 
+
+- https://r-graph-gallery.com/ggplot2-package.html 
