@@ -1,0 +1,29 @@
+library(curl)
+library(gtrendsR)
+library(dplyr)
+library(leaflet)
+library(leafem)
+library(leaflet.extras)
+library(mapview)
+
+
+trend <- gtrends(keyword = "Register to vote", 
+                 geo = "US", time = "2024-09-09 2024-09-11", gprop = "web", 
+                 low_search_volume = FALSE, onlyInterest = FALSE)
+
+#Get data or search interest across different regions
+
+region_trend <- trend$interest_by_region
+
+# Change the variable "location" to "NAME" 
+
+names(region_trend)[names(region_trend) == "location"] <- "NAME"
+
+us_geo <- tigris::states(cb = TRUE, resolution = '20m')
+head(us_geo)
+combineddata <- inner_join(us_geo, region_trend, by = c("NAME" = "NAME")) 
+mapview(combineddata, zcol = "hits")
+
+mapview(combineddata, zcol = "hits", label = "hits", 
+            layer.name = "Register to vote - hits") |> 
+  addStaticLabels(label = combineddata$hits, textsize = "10px")
