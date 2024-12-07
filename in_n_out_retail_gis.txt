@@ -1,0 +1,154 @@
+---
+title: "Retail Store Location Analysis for In-N-Out Burger with R"
+output: html_document
+date: "2024-12-03"
+author: "your name, taught by Dr. Zhenning 'Jimmy' Xu, follow him on Twitter: https://twitter.com/MKTJimmyxu or find him on his website at  utjimmyx.github.io"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Selecting the ideal location for a retail store is a critical factor in ensuring its success. Location analysis involves evaluating multiple aspects such as demographic trends, population density, competitor presence, and ease of accessibility. This helps businesses identify the most strategic sites for maximizing customer reach and profitability.
+In this tutorial, we will explore how to conduct retail store location analysis using the R. By combining real-world data with analytical techniques, this guide offers a practical approach to making data-driven decisions in retail planning. The example is based on resources from Geo-computation with R and a few other technical articles. 
+
+In this tutorial, we analyze the retail expansion strategy for In-N-Out Burger using R. This guide aims to:
+
+ - **Highlight the significance of location analysis for retail businesses.**
+
+ - **Showcase how to utilize R for analyzing and visualizing potential store locations.**
+
+ - **Provide insights and recommendations for strategic retail decision-making.**
+
+
+If you never used R before, please check out this introduction here: https://www.geeksforgeeks.org/r-programming-language-introduction/ . 
+
+In this tutorial, we evaluate retail store locations using real-world city data. The analysis includes median household income, population, and competitor count.
+
+
+## Step 1: Set Up the Environment
+First, load the required libraries.
+
+```{r}
+## install.packages(c("ggplot2", "dplyr"))
+library(ggplot2)
+library(dplyr)
+``` 
+  
+
+## Step 2: Create the Dataset for the In-N-Out Stores in several metropolitan cities.
+
+The dataset includes data from authoritative sources like the Census Bureau and World Population Review and the In-N-Out website.
+
+```{r}
+retail_data <- data.frame(
+  City = c("San Diego", "Phoenix", "Dallas", "Los Angeles", "Las Vegas"),
+  Median_Income = c(85000, 64000, 69000, 75000, 62000),  # Median household income in USD
+  Population = c(1423851, 1690000, 1343000, 3898747, 653725),  # City population
+  Competitor_Count = c(24, 25, 24, 79, 19)  # Hypothetical competitor counts
+)
+# View the dataset
+print(retail_data)
+```
+
+## Step 3: Data Analysis
+
+We now calculate a popularity score for each city based on income, population, and competition. Please note that this is a heuristic index designed for analytical purposes and may not accurately reflect real-world conditions.
+
+```{r}
+retail_data <- retail_data %>%
+  mutate(
+    Score = Median_Income / Competitor_Count * log(Population)
+  ) %>%
+  arrange(desc(Score))  # Sort by score
+
+print(retail_data)
+```
+
+
+## Step 4: Visualization
+Median Income vs. Competitor Count
+
+```{r}
+ggplot(retail_data, aes(x = reorder(City, -Median_Income), y = Median_Income, fill = Competitor_Count)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Median Income vs Competitor Count by City",
+       x = "City",
+       y = "Median Income",
+       fill = "In-N-Out Stores") +
+  theme_minimal()
+```
+
+
+## Let's explore the relationship between Location Score and Median Income
+```{r}
+ggplot(retail_data, aes(x = Median_Income, y = Score, color = City)) +
+  geom_point(size = 4) +
+  labs(title = "Location Score vs Median Income",
+       x = "Median Income",
+       y = "Score") +
+  theme_minimal()
+```
+
+## Let's create a map that showcases the median income and store counts in each city. 
+
+```{r}
+# Load libraries
+library(ggplot2)
+library(sf)
+library(maps)
+
+# Let's redefine our dataset by adding the GIS features to the original data, Retail data
+retail_data <- data.frame(
+  City = c("San Diego", "Phoenix", "Dallas", "Los Angeles", "Las Vegas"),
+  Median_Income = c(85000, 64000, 69000, 75000, 62000),
+  Population = c(1423851, 1690000, 1343000, 3898747, 653725),
+  Competitor_Count = c(24, 25, 24, 79, 19),
+  Longitude = c(-117.1611, -112.0740, -96.7970, -118.2437, -115.1398),
+  Latitude = c(32.7157, 33.4484, 32.7767, 34.0522, 36.1699)
+)
+
+# Load USA map data
+usa <- map_data("state")
+
+# Create the map plot
+ggplot() +
+  # Draw the USA map
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group),
+               fill = "lightgray", color = "white") +
+  # Add city points
+  geom_point(data = retail_data, aes(x = Longitude, y = Latitude,
+                                     size = Competitor_Count, color = Median_Income),
+             alpha = 0.7) +
+  # Add city labels
+  geom_text(data = retail_data, aes(x = Longitude, y = Latitude, label = City),
+            nudge_y = 1, size = 3, color = "black") +
+  # Customize scales
+  scale_size_continuous(name = "In-N-Out Burger", range = c(2, 8)) +
+  scale_color_gradient(name = "Median Income", low = "blue", high = "red") +
+  # Add labels and theme
+  labs(title = "Retail Store Location Analysis",
+       subtitle = "Mapping Median Income and In-N-Out Burger for Selected Cities",
+       x = "Longitude", y = "Latitude") +
+  theme_minimal()
+```
+
+
+## Step 6: Save the Results
+Export the analyzed data to a CSV file for further use.
+
+```{r}
+write.csv(retail_data, "real_retail_analysis_results.csv", row.names = FALSE)
+```
+
+## Reference: 
+
+### In-N-Out. https://www.in-n-out.com/docs/default-source/downloads/locations_printable.pdf
+
+### Davis, P. (2006). Spatial competition in retail markets: movie theaters. The RAND Journal of Economics, 37(4), 964-982. 
+
+### ggplot2 https://r-graph-gallery.com/ggplot2-package.html
+
+### Geocomputation with R 
+
+### GeeksforGeeks
