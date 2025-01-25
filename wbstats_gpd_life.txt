@@ -1,0 +1,37 @@
+install.packages("wbstats", "readr")
+# Load libraries
+library(wbstats)
+library(readr)
+
+## ref: https://cran.r-project.org/web/packages/wbstats/vignettes/wbstats.html
+
+getwd()
+setwd("C:/Users/zxu3/Documents/R/ggplot")
+
+my_indicators <- c(
+  life_exp = "SP.DYN.LE00.IN", 
+  gdp_capita ="NY.GDP.PCAP.CD"
+)
+
+data <- wb_data(my_indicators, start_date = 2022, end_date = 2022)
+head(data)
+
+
+plot(data$life_exp, data$gdp_capita)
+
+# Create the base scatter plot
+plot(data$life_exp, data$gdp_capita, 
+     xlab = "Life Expectancy", 
+     ylab = "GDP Per Capita", 
+     main = "Life Expectancy vs. GDP Per Capita",
+     pch = 8, col = "blue")  # Customize point style and color
+
+# Add labels for year and country
+text(data$life_exp, data$gdp_capita, 
+     labels = paste(data$country, sep = " - "), 
+     cex = 0.7, pos = 4, col = "darkgreen")
+
+write.csv(data, "gdp_life.csv")
+
+## Ref: https://www.r-bloggers.com/2021/06/r-plot-pch-symbols-different-point-shapes-in-r/ 
+
