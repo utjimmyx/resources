@@ -24,6 +24,8 @@ First, let’s load a sample dataset. We will use the built-in dataset named "ca
 # Load the dataset
 library(ggplot2)
 library(dplyr)
+library(maps)
+library(mapproj)
 data(cars)
 head(cars)
 str(cars)
