@@ -1,0 +1,128 @@
+## the following syntax is adapted from Dr. Miller's chapter named "Retaining customers"
+
+data <- read.csv('att.csv') #read data
+library(lattice)  # lattice plot
+
+library(vcd)  # mosaic plots
+
+library(gam)  # generalized additive models for probability smooth
+
+library(rpart)  # tree-structured modeling
+
+library(e1071)  # support vector machines
+
+library(randomForest)  # random forests
+
+library(nnet)  # neural networks
+
+library(rpart.plot)  # plot tree-structured model information
+
+library(ROCR)  # ROC curve objects for binary classification
+
+
+
+# user-defined function for plotting ROC curve using ROC objects from ROCR
+
+
+# read them as character fields initially
+
+att <- read.csv("att.csv", stringsAsFactors = FALSE)
+
+print(str(att))
+
+
+
+# convert blank character fields to missing data codes
+
+att[att == ""] <- NA
+
+
+
+# convert character fields to factor fields
+
+att$pick <- factor(att$pick)
+
+att$income <- factor(att$income)
+
+att$moves <- factor(att$moves)
+
+att$age <- factor(att$age)
+
+att$education <- factor(att$education)
+
+att$employment <- factor(att$employment)
+
+att$nonpub <- factor(att$nonpub)
+
+att$reachout <- factor(att$reachout)
+
+att$card <- factor(att$card)
+
+
+
+# check revised structure of att data frame
+
+print(str(att))
+
+# select usage and AT&T marketing plan factors
+
+attwork <- subset(att, select = c("pick", "usage", "reachout", "card"))
+
+attwork <- na.omit(attwork)
+
+# listwise case deletion for usage and marketing factors
+
+attwork <- na.omit(attwork)
+
+print(summary(attwork))
+
+
+
+# provide overview of data
+
+print(summary(att))
+
+
+
+# -----------------
+
+# usage and pick
+
+# -----------------
+
+# examine relationship between age and response to promotion
+
+
+lattice_plot_object <- histogram(~usage | pick, data = att,
+                                 
+                                 type = "density", xlab = "Telephone Usage (Minutes per Month)",
+                                 
+                                 layout = c(1,2))
+
+print(lattice_plot_object)  # switchers tend to have lower usage
+
+
+
+att_gam_model <- gam(pick == "OCC"  ~ s(usage), family=binomial,data=att)
+
+# probability smooth for usage and switching
+
+
+plot(att$usage, att$pick == "OCC", type="n",
+     
+     ylim=c(-0.1,1.1), yaxt="n",
+     
+     ylab="Estimated Probability of Switching",
+     
+     xlab="Telephone Usage (Minutes per Month)")
+
+axis(2, at=c(0,.5,1))
+
+points(jitter(att$usage),
+       
+       att$pick=="OCC",pch="|")
+
+o <- order(att$usage)
+
+lines(att$usage[o],fitted(att_gam_model)[o])
+
