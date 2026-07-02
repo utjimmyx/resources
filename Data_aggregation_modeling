@@ -1,9 +1,15 @@
 #  Can Google Trends Predict Amazon Stock Prices?
 
-Google search behavior can provide valuable insights into consumer interest and market trends. 
+ 
+### Google search behavior can provide valuable insights into consumer interest and market trends. 
 In this project, we examine whether Google Trends search interest for the keyword "ecommerce" is associated with Amazon (AMZN) stock prices. 
 Using five years of historical stock data from Yahoo Finance and monthly Google Trends data, we merge the datasets, visualize their relationship, 
 and build a simple linear regression model to evaluate the predictive value of search interest.
+
+### The gtrendsR package (used to pull Google Trends data in R) can sometimes fail temporarily because Google places rate limits on automated requests.
+In practice, this means students may see errors such as:
+status code 429 (Too Many Requests)
+
 ```{r echo=FALSE}
 library(dplyr)
 library(quantmod)
