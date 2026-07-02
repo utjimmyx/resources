@@ -1,6 +1,5 @@
 #  Can Google Trends Predict Amazon Stock Prices?
 
- 
 ### Google search behavior can provide valuable insights into consumer interest and market trends. 
 In this project, we examine whether Google Trends search interest for the keyword "ecommerce" is associated with Amazon (AMZN) stock prices. 
 Using five years of historical stock data from Yahoo Finance and monthly Google Trends data, we merge the datasets, visualize their relationship, 
