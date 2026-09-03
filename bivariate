@@ -55,9 +55,8 @@ plot(sales ~ TV, data = ad_sales)
 
 ###Your answer here
 
-###Question 4:Three things you learned from this tutorial
-###Your answer here
-
+### Question 4: Explain one of the functions you learned in your own words.
+### Your answer here
 
 ## References
 
